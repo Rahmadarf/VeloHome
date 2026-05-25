@@ -1,0 +1,23 @@
+name: VeloHome
+version: 1.0.0
+main: com.kumar.veloHome.VeloHome
+api-version: '1.21'
+author: Rahmad Arifin
+
+
+commands:
+  sethome:
+    description: Save your home location..
+    usage: /sethome [home_name]
+
+  home:
+    description: Teleport to your home.
+    usage: /home [home_name]
+
+  homes:
+    description: Show you all of your home.
+    usage: /homes
+
+  delhome:
+    description: Delete your home.
+    usage: /delhome [home_name]
