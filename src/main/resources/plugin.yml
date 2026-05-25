@@ -9,15 +9,39 @@ commands:
   sethome:
     description: Save your home location..
     usage: /sethome [home_name]
+    permission: velohome.command.sethome
 
   home:
     description: Teleport to your home.
     usage: /home [home_name]
+    permission: velohome.command.home
 
   homes:
     description: Show you all of your home.
     usage: /homes
+    permission: velohome.command.homes
 
   delhome:
     description: Delete your home.
     usage: /delhome [home_name]
+    permission: velohome.command.delhome
+
+
+
+
+permissions:
+  velohome.command.sethome:
+    description: Allowed player save their own home.
+    default: true
+
+  velohome.command.home:
+    description: Allowed player teleport to their own home.
+    default: true
+
+  velohome.command.homes:
+    description: Allowed player see their own home.
+    default: true
+
+  velohome.command.delhome:
+    description: Allowed player delete their own home.
+    default: true
