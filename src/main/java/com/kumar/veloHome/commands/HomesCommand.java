@@ -3,6 +3,7 @@ package com.kumar.veloHome.commands;
 import com.kumar.veloHome.VeloHome;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -25,8 +26,14 @@ public class HomesCommand implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
+        var mm = MiniMessage.miniMessage();
+
+        String prefix = plugin.getMessageConfig().getString("prefix", " ");
+        String onlyPlayer = plugin.getMessageConfig().getString("only-player", " ");
+        String noHome = plugin.getMessageConfig().getString("no-home", " ");
+
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(Component.text("Only players can use this command!"));
+            sender.sendMessage(mm.deserialize(onlyPlayer));
             return true;
         }
 
@@ -39,7 +46,7 @@ public class HomesCommand implements CommandExecutor {
             ConfigurationSection section = config.getConfigurationSection("homes." + uuid);
 
             if (section == null || section.getKeys(false).isEmpty()) {
-                player.sendMessage(VeloHome.PREFIX.append(Component.text("You don't have a home yet!")));
+                player.sendMessage(mm.deserialize(prefix + noHome));
                 return true;
             }
 
@@ -47,8 +54,11 @@ public class HomesCommand implements CommandExecutor {
 
             String homeList = String.join(", ", homeNames);
 
+            String homes = plugin.getMessageConfig().getString("home-list", " ");
+            homes = homes.replace("{homeList}", String.valueOf(homeList));
+
             player.sendMessage(" ");
-            player.sendMessage(VeloHome.PREFIX.append(Component.text(homeList, NamedTextColor.GOLD)));
+            player.sendMessage(mm.deserialize(prefix + homes));
             player.sendMessage(" ");
         }
 

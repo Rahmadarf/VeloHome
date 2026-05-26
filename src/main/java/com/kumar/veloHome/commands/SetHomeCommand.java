@@ -3,6 +3,7 @@ package com.kumar.veloHome.commands;
 import com.kumar.veloHome.VeloHome;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -21,11 +22,17 @@ public class SetHomeCommand implements CommandExecutor {
         this.plugin = plugin;
     }
 
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
+        var mm = MiniMessage.miniMessage();
+
+        String onlyPlayer = plugin.getMessageConfig().getString("only-player", " ");
+        String prefix = plugin.getMessageConfig().getString("prefix", " ");
+
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(Component.text("Only players can use this command!", NamedTextColor.RED));
+            sender.sendMessage(onlyPlayer);
             return true;
         }
 
@@ -37,9 +44,11 @@ public class SetHomeCommand implements CommandExecutor {
         // ================
         if (command.getName().equalsIgnoreCase("sethome")) {
 
+            String sethomeUsage = plugin.getMessageConfig().getString("sethome-usage", " ");
+
             // CEK APAKAH PLAYER HANYA MENGETIK /SETHOME (TANPA SPASI DLL)
             if (args.length == 0) {
-                player.sendMessage(VeloHome.PREFIX.append(Component.text("Usage: /sethome [name]", NamedTextColor.GRAY)));
+                player.sendMessage(mm.deserialize(prefix + sethomeUsage));
                 return true;
             }
 
@@ -47,19 +56,28 @@ public class SetHomeCommand implements CommandExecutor {
             Location loc = player.getLocation();
             String path = plugin.getPath(uuid, homeName);
 
-            var homeSection = config.createSection(path);
+            String rawSaved = plugin.getMessageConfig().getString("home-saved", " ");
+            String saved = rawSaved.replace("{home}", String.valueOf(homeName));
 
-            homeSection.set("world", loc.getWorld().getName());
-            homeSection.set("x", loc.getX());
-            homeSection.set("y", loc.getY());
-            homeSection.set("z", loc.getZ());
-            homeSection.set("yaw", loc.getYaw());
-            homeSection.set("pitch", loc.getPitch());
+            String rawUpdated = plugin.getMessageConfig().getString("home-updated", " ");
+            String updated = rawUpdated.replace("{home}", String.valueOf(homeName));
+
+            boolean isUpdating = plugin.getConfig().contains(path);
+
+            config.set(path + ".world", loc.getWorld().getName());
+            config.set(path + ".x", loc.getX());
+            config.set(path + ".y", loc.getY());
+            config.set(path + ".z", loc.getZ());
+            config.set(path + ".yaw", loc.getYaw());
+            config.set(path + ".pitch", loc.getPitch());
 
             plugin.saveConfig();
 
-            player.sendMessage(VeloHome.PREFIX.append(Component.text(homeName, NamedTextColor.YELLOW))
-                    .append(Component.text(" saved successfully!", NamedTextColor.GREEN)));
+            if (isUpdating) {
+                player.sendMessage(mm.deserialize(prefix + updated));
+            } else {
+                player.sendMessage(mm.deserialize(prefix + saved));
+            }
         }
 
         return true;

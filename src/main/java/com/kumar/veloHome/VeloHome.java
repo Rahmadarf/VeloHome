@@ -12,11 +12,13 @@ import org.bukkit.Location;
 import org.bukkit.command.*;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.UUID;
 
 public final class VeloHome extends JavaPlugin {
@@ -32,11 +34,17 @@ public final class VeloHome extends JavaPlugin {
 
     private static VeloHome instance;
 
+    private File messageFile;
+    private FileConfiguration messageConfig;
+
+
 
     @Override
     public void onEnable() {
         instance = this;
         saveDefaultConfig();
+
+        createMessageConfig();
 
         SetHomeCommand setHomeCmd = new SetHomeCommand(this);
         HomeCommand homeCmd = new HomeCommand(this);
@@ -64,5 +72,31 @@ public final class VeloHome extends JavaPlugin {
 
     public static VeloHome getInstance() {
         return instance;
+    }
+
+
+    // ===========================
+    // CUSTOM FILE MANAGER
+    // ===========================
+    public FileConfiguration getMessageConfig() {
+        return this.messageConfig;
+    }
+
+    private void createMessageConfig() {
+        messageFile = new File(getDataFolder(), "velohome.yml");
+
+        if (!messageFile.exists()) {
+            messageFile.getParentFile().mkdirs();
+            saveResource("velohome.yml", false);
+        }
+
+        messageConfig = YamlConfiguration.loadConfiguration(messageFile);
+    }
+
+    public void reloadMessageConfig() {
+        if (messageFile == null) {
+            messageFile = new File(getDataFolder(), "velohome.yml");
+        }
+        messageConfig = YamlConfiguration.loadConfiguration(messageFile);
     }
 }

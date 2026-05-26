@@ -1,0 +1,31 @@
+# ====================================================
+# VeloHome Custom Messages Configuration
+# Supports MiniMessage format (e.g., <red>, <gold>, <bold>)
+# ====================================================
+
+# PREFIX
+prefix: "<dark_purple><light_purple>VeloHome </light_purple> <dark_gray>» </dark_gray></dark_purple>"
+
+teleport-started: "<gold>⚡ Don't move!</gold>"
+teleport-success-actionbar: "<green>⚡ Teleport successfully!</green>"
+teleport-success-message: "<green>Teleport successfully!</green>"
+teleport-canceled-actionbar: "<red>Teleport canceled!</red>"
+teleport-canceled-message: "<red>You move! Teleport canceled.</red>"
+teleport-countdown: "<gold>⚡ Teleport In {sec}</gold>"
+teleport-already: "<red>You are already in the queue!</red>"
+
+home-not-found: "<red>You don't have a home with that name!</red>"
+home-updated: "<yellow>{home} <green>positions han been updated to your current location!</green></yellow>"
+no-permission: "<red>You do not have permission to use this command.</red>"
+config-reloaded: "<green>Config reloaded!</green>"
+only-player: "<red>Only players can use this command!</red>"
+world-not-found: "<red>World not found!</red>"
+home-saved: "<yellow>{home} <green>saved successfully!</green></yellow>"
+home-deleted: "<yellow>{home} <green>deleted successfully!</green></yellow>"
+no-home: "<red>You don't have a home yet!</red>"
+home-list: "<gold>{homeList}</gold>"
+
+# USAGE
+sethome-usage: "<gray>Usage: /sethome [name]</gray>"
+home-usage: "<gray>Usage: /home [name]</gray>"
+delhome-usage: "<gray>Usage: /delhome [name]</gray>"

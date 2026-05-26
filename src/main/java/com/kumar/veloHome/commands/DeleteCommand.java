@@ -3,6 +3,7 @@ package com.kumar.veloHome.commands;
 import com.kumar.veloHome.VeloHome;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -28,8 +29,14 @@ public class DeleteCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
+        var mm = MiniMessage.miniMessage();
+        String prefix = plugin.getMessageConfig().getString("prefix", " ");
+        String onlyPlayer = plugin.getMessageConfig().getString("only-player", " ");
+        String delhomeUsage = plugin.getMessageConfig().getString("delhome-usage", " ");
+        String notFound = plugin.getMessageConfig().getString("home-not-found", " ");
+
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(Component.text("Only player can use this command!", NamedTextColor.RED));
+            sender.sendMessage(mm.deserialize(onlyPlayer));
             return true;
         }
 
@@ -39,23 +46,25 @@ public class DeleteCommand implements CommandExecutor, TabCompleter {
         if (command.getName().equalsIgnoreCase("delhome")) {
 
             if (args.length == 0) {
-                player.sendMessage(VeloHome.PREFIX.append(Component.text("Usage: /delhome [name]", NamedTextColor.GRAY)));
+                player.sendMessage(mm.deserialize(prefix + delhomeUsage));
                 return true;
             }
 
             String homeName = args[0].toLowerCase();
             String path = plugin.getPath(uuid, homeName);
 
+            String deleted = plugin.getMessageConfig().getString("home-deleted", " ");
+            deleted = deleted.replace("{home}", String.valueOf(homeName));
+
             if (!config.contains(path)) {
-                player.sendMessage(VeloHome.PREFIX.append(Component.text("You don't have a home with that name!")));
+                player.sendMessage(mm.deserialize(prefix + notFound));
                 return true;
             }
 
             config.set(path, null);
             plugin.saveConfig();
 
-            player.sendMessage(VeloHome.PREFIX.append(Component.text(homeName, NamedTextColor.YELLOW))
-                    .append(Component.text(" deleted successfully!", NamedTextColor.GREEN)));
+            player.sendMessage(mm.deserialize(prefix + deleted));
         }
 
 

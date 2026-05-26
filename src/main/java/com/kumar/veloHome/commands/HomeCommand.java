@@ -3,6 +3,7 @@ package com.kumar.veloHome.commands;
 import com.kumar.veloHome.VeloHome;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -40,8 +41,37 @@ public class HomeCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
+        var mm = MiniMessage.miniMessage();
+
+        String prefix = plugin.getMessageConfig().getString("prefix", " ");
+
+        String noPermission = plugin.getMessageConfig().getString("no-permission", " ");
+        String reloaded = plugin.getMessageConfig().getString("config-reloaded", " ");
+        String onlyPlayer = plugin.getMessageConfig().getString("only-player", " ");
+        String homeUsage = plugin.getMessageConfig().getString("home-usage", " ");
+        String notFound = plugin.getMessageConfig().getString("home-not-found", " ");
+        String worldNotFound = plugin.getMessageConfig().getString("world-not-found", " ");
+        String alreadyTeleport = plugin.getMessageConfig().getString("teleport-already", " ");
+        String teleportStarted = plugin.getMessageConfig().getString("teleport-started", " ");
+        String tpSuccessMessage = plugin.getMessageConfig().getString("teleport-success-message", " ");
+        String tpSuccessActionbar = plugin.getMessageConfig().getString("teleport-success-actionbar", " ");
+
+        if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
+
+            if (!(sender.hasPermission("velohome.admin"))) {
+                sender.sendMessage(mm.deserialize(prefix + noPermission));
+                return true;
+            }
+
+            plugin.reloadConfig();
+            plugin.reloadMessageConfig();
+
+            sender.sendMessage(mm.deserialize(prefix + reloaded));
+            return true;
+        }
+
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(Component.text("Only players can use this command!", NamedTextColor.RED));
+            sender.sendMessage(mm.deserialize(prefix + onlyPlayer));
             return true;
         }
 
@@ -52,7 +82,7 @@ public class HomeCommand implements CommandExecutor, TabCompleter {
 
             // CEK APAKAH PLAYER HANYA MENGETIK /HOME (TANPA SPASI DLL)
             if (args.length == 0) {
-                player.sendMessage(VeloHome.PREFIX.append(Component.text("Usage: /home [name]", NamedTextColor.GRAY)));
+                player.sendMessage(mm.deserialize(prefix + homeUsage));
                 return true;
             }
 
@@ -62,12 +92,12 @@ public class HomeCommand implements CommandExecutor, TabCompleter {
 
             // CEK APAKAH USER MEMILIKI HOME YANG DI KETIK DI COMMAND
             if (!config.contains(path)) {
-                player.sendMessage(VeloHome.PREFIX.append(Component.text("You don't have a home with that name!", NamedTextColor.RED)));
+                player.sendMessage(mm.deserialize(prefix + notFound));
                 return true;
             }
 
             if (pendingTp.containsKey(uuid)) {
-                player.sendMessage(VeloHome.PREFIX.append(Component.text("You are already in the queue!")));
+                player.sendMessage(mm.deserialize(prefix + alreadyTeleport));
                 return true;
             }
 
@@ -83,12 +113,12 @@ public class HomeCommand implements CommandExecutor, TabCompleter {
             if (worldName == null) return true;
             World world = Bukkit.getWorld(worldName);
             if (world == null) {
-                player.sendMessage(VeloHome.PREFIX.append(Component.text("World not found!", NamedTextColor.RED)));
+                player.sendMessage(mm.deserialize(prefix + worldNotFound));
                 return true;
             }
 
             Location homeLocation = new Location(world, x, y, z, yaw, pitch);
-            player.sendActionBar(Component.text("⚡ Don't move!", NamedTextColor.GOLD));
+            player.sendActionBar(mm.deserialize(teleportStarted));
 
             BukkitTask teleportTask = new BukkitRunnable() {
 
@@ -108,20 +138,23 @@ public class HomeCommand implements CommandExecutor, TabCompleter {
                         player.teleport(homeLocation);
 
                         player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 1.0f);
-                        player.sendMessage(VeloHome.PREFIX.append(Component.text("Teleport Successfully!", NamedTextColor.GREEN)));
-                        player.sendActionBar(Component.text("⚡ Teleport Successfully", NamedTextColor.GREEN));
+                        player.sendMessage(mm.deserialize(prefix + tpSuccessMessage));
+                        player.sendActionBar(mm.deserialize(tpSuccessActionbar));
 
                         pendingTp.remove(uuid);
                         cancel();
                         return;
                     }
 
-                    player.sendActionBar(Component.text("⚡ Teleport In " + sec, NamedTextColor.GOLD));
+                    String rawTeleportCount = plugin.getMessageConfig().getString("teleport-countdown", " ");
+                    String teleportCount = rawTeleportCount.replace("{sec}", String.valueOf(sec));
+
+                    player.sendActionBar(mm.deserialize(teleportCount));
                     float nada = 0.5f + ((4 - sec) * 0.35f);
                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1.0f, nada);
                     sec--;
                 }
-            }.runTaskTimer(plugin, 0L, 20L);
+            }.runTaskTimer(plugin, 20L, 20L);
 
             pendingTp.put(uuid, teleportTask);
 
@@ -144,6 +177,10 @@ public class HomeCommand implements CommandExecutor, TabCompleter {
         if (args.length == 1 && sender instanceof Player player) {
 
             ConfigurationSection section = config.getConfigurationSection("homes." + player.getUniqueId());
+
+            if (player.hasPermission("velohome.admin")) {
+                suggestions.add("reload");
+            }
 
             if (section != null) {
 
