@@ -54,7 +54,8 @@ public class DeleteCommand implements CommandExecutor, TabCompleter {
             config.set(path, null);
             plugin.saveConfig();
 
-            player.sendMessage(VeloHome.PREFIX.append(Component.text(homeName + " Deleted successfully!")));
+            player.sendMessage(VeloHome.PREFIX.append(Component.text(homeName, NamedTextColor.YELLOW))
+                    .append(Component.text(" deleted successfully!", NamedTextColor.GREEN)));
         }
 
 

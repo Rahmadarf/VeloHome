@@ -4,6 +4,7 @@ import com.kumar.veloHome.commands.DeleteCommand;
 import com.kumar.veloHome.commands.HomesCommand;
 import com.kumar.veloHome.commands.SetHomeCommand;
 import com.kumar.veloHome.commands.HomeCommand;
+import com.kumar.veloHome.listeners.TeleportListener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
@@ -42,14 +43,21 @@ public final class VeloHome extends JavaPlugin {
         HomesCommand homesCmd = new HomesCommand(this);
         DeleteCommand deleteCmd = new DeleteCommand(this);
 
+        // COMMAND /SETHOME
         getCommand("sethome").setExecutor(setHomeCmd);
 
+        // COMMAND /HOME
         getCommand("home").setExecutor(homeCmd);
         getCommand("home").setTabCompleter(homeCmd);
 
+        // COMMAND /HOMES
         getCommand("homes").setExecutor(homesCmd);
 
+        // COMMAND /DELHOME
         getCommand("delhome").setExecutor(deleteCmd);
+
+        // REGISTER LISTENER
+        getServer().getPluginManager().registerEvents(new TeleportListener(homeCmd), this);
 
         getLogger().info("VeloHome Actived!");
     }

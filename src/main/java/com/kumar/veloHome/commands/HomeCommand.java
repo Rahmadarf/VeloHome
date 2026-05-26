@@ -13,18 +13,25 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.bukkit.Sound;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 
 public class HomeCommand implements CommandExecutor, TabCompleter {
 
     private final VeloHome plugin;
+
+    private final Map<UUID, BukkitTask> pendingTp = new HashMap<>();
+
+    public Map<UUID, BukkitTask> getPendingTP() {
+        return this.pendingTp;
+    }
 
     public HomeCommand(VeloHome plugin) {
         this.plugin = plugin;
@@ -59,6 +66,11 @@ public class HomeCommand implements CommandExecutor, TabCompleter {
                 return true;
             }
 
+            if (pendingTp.containsKey(uuid)) {
+                player.sendMessage(VeloHome.PREFIX.append(Component.text("You are already in the queue!")));
+                return true;
+            }
+
 
             // MENGAMBIL COORDINAT DARI FILE CONFIG.YML
             String worldName = config.getString(path + ".world");
@@ -76,9 +88,43 @@ public class HomeCommand implements CommandExecutor, TabCompleter {
             }
 
             Location homeLocation = new Location(world, x, y, z, yaw, pitch);
-            player.sendActionBar(Component.text("⚡ Teleportation.. ", NamedTextColor.GOLD));
+            player.sendActionBar(Component.text("⚡ Don't move!", NamedTextColor.GOLD));
 
-            player.teleport(homeLocation);
+            BukkitTask teleportTask = new BukkitRunnable() {
+
+                int sec = 3;
+                final Location startLocation = player.getLocation();
+
+                @Override
+                public void run() {
+
+                    if (!player.isOnline()) {
+                        pendingTp.remove(uuid);
+                        this.cancel();
+                        return;
+                    }
+
+                    if (sec <= 0 ) {
+                        player.teleport(homeLocation);
+
+                        player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 1.0f, 1.0f);
+                        player.sendMessage(VeloHome.PREFIX.append(Component.text("Teleport Successfully!", NamedTextColor.GREEN)));
+                        player.sendActionBar(Component.text("⚡ Teleport Successfully", NamedTextColor.GREEN));
+
+                        pendingTp.remove(uuid);
+                        cancel();
+                        return;
+                    }
+
+                    player.sendActionBar(Component.text("⚡ Teleport In " + sec, NamedTextColor.GOLD));
+                    float nada = 0.5f + ((4 - sec) * 0.35f);
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_CHIME, 1.0f, nada);
+                    sec--;
+                }
+            }.runTaskTimer(plugin, 0L, 20L);
+
+            pendingTp.put(uuid, teleportTask);
+
         }
 
         return true;

@@ -48,8 +48,7 @@ public class HomesCommand implements CommandExecutor {
             String homeList = String.join(", ", homeNames);
 
             player.sendMessage(" ");
-            player.sendMessage(VeloHome.PREFIX.append(Component.text("Your homes:")));
-            player.sendMessage(Component.text("» ", NamedTextColor.DARK_GRAY).append(Component.text(homeList, NamedTextColor.GOLD)));
+            player.sendMessage(VeloHome.PREFIX.append(Component.text(homeList, NamedTextColor.GOLD)));
             player.sendMessage(" ");
         }
 
